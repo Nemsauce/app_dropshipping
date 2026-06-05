@@ -75,6 +75,7 @@ export type ProductOpportunity = {
   mxTopAd2Page?: string | null;
   mxTopAd3Url?: string | null;
   mxTopAd3Page?: string | null;
+  createdAt?: string | null;
 };
 
 export type Signal = {

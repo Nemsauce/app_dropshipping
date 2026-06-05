@@ -185,6 +185,59 @@ function EmptyState({ onClearFilters }: { onClearFilters: () => void }) {
   );
 }
 
+type QuickDateFilter = "all" | "today" | "7days" | "30days" | "custom";
+
+function matchesDateFilter(
+  product: ProductOpportunity,
+  quickDateFilter: QuickDateFilter,
+  dateFrom: string,
+  dateTo: string,
+): boolean {
+  if (quickDateFilter === "all" && !dateFrom && !dateTo) {
+    return true;
+  }
+
+  if (product.createdAt == null && quickDateFilter !== "all") {
+    return false;
+  }
+
+  const createdAt = product.createdAt!;
+
+  if (quickDateFilter === "today") {
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    return createdAt.slice(0, 10) === todayStr;
+  }
+
+  if (quickDateFilter === "7days" || quickDateFilter === "30days") {
+    const days = quickDateFilter === "7days" ? 7 : 30;
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+    cutoff.setHours(0, 0, 0, 0);
+    return new Date(createdAt) >= cutoff;
+  }
+
+  if (quickDateFilter === "custom") {
+    if (!dateFrom && !dateTo) {
+      return true;
+    }
+    const createdDate = new Date(createdAt);
+    if (dateFrom) {
+      const from = new Date(dateFrom);
+      from.setHours(0, 0, 0, 0);
+      if (createdDate < from) return false;
+    }
+    if (dateTo) {
+      const to = new Date(dateTo);
+      to.setHours(23, 59, 59, 999);
+      if (createdDate > to) return false;
+    }
+    return true;
+  }
+
+  return true;
+}
+
 export function ProductsExplorer({ products }: ProductsExplorerProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [marketFilter, setMarketFilter] = useState("All markets");
@@ -194,6 +247,9 @@ export function ProductsExplorer({ products }: ProductsExplorerProps) {
   const [riskFilter, setRiskFilter] = useState("All risks");
   const [providerFilter, setProviderFilter] = useState("All providers");
   const [tierFilter, setTierFilter] = useState("All tiers");
+  const [quickDateFilter, setQuickDateFilter] = useState<QuickDateFilter>("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   const providerOptions = useMemo(
     () => ["All providers", ...uniqueSorted(products.map((product) => product.provider))],
@@ -222,13 +278,17 @@ export function ProductsExplorer({ products }: ProductsExplorerProps) {
           (riskFilter === "All risks" || product.risk === riskFilter) &&
           (providerFilter === "All providers" ||
             product.provider === providerFilter) &&
-          (tierFilter === "All tiers" || product.tier === tierFilter)
+          (tierFilter === "All tiers" || product.tier === tierFilter) &&
+          matchesDateFilter(product, quickDateFilter, dateFrom, dateTo)
         );
       }),
     [
+      dateFrom,
+      dateTo,
       marketFilter,
       products,
       providerFilter,
+      quickDateFilter,
       recommendationFilter,
       riskFilter,
       searchQuery,
@@ -236,13 +296,18 @@ export function ProductsExplorer({ products }: ProductsExplorerProps) {
     ],
   );
 
+  const hasActiveDateFilter =
+    (quickDateFilter !== "all" && quickDateFilter !== "custom") ||
+    (quickDateFilter === "custom" && (dateFrom.length > 0 || dateTo.length > 0));
+
   const hasActiveFilters =
     searchQuery.trim().length > 0 ||
     marketFilter !== "All markets" ||
     recommendationFilter !== "All recommendations" ||
     riskFilter !== "All risks" ||
     providerFilter !== "All providers" ||
-    tierFilter !== "All tiers";
+    tierFilter !== "All tiers" ||
+    hasActiveDateFilter;
 
   const summaryCards = buildSummaryCards(filteredProducts);
   const selectedProduct =
@@ -262,6 +327,9 @@ export function ProductsExplorer({ products }: ProductsExplorerProps) {
     setRiskFilter("All risks");
     setProviderFilter("All providers");
     setTierFilter("All tiers");
+    setQuickDateFilter("all");
+    setDateFrom("");
+    setDateTo("");
   }
 
   return (
@@ -374,6 +442,65 @@ export function ProductsExplorer({ products }: ProductsExplorerProps) {
               Export View
             </Button>
           </div>
+        </div>
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <span className="text-xs text-muted">Date Added</span>
+          {(
+            [
+              { key: "all", label: "All time" },
+              { key: "today", label: "Today" },
+              { key: "7days", label: "Last 7 days" },
+              { key: "30days", label: "Last 30 days" },
+            ] as { key: QuickDateFilter; label: string }[]
+          ).map(({ key, label }) => (
+            <button
+              className={cn(
+                "h-8 rounded-lg border px-3 text-xs font-medium transition-colors",
+                quickDateFilter === key
+                  ? "border-demand/50 bg-demand/10 text-demand"
+                  : "border-border/70 bg-transparent text-muted-foreground hover:border-demand/40 hover:text-foreground",
+              )}
+              key={key}
+              onClick={() => {
+                setQuickDateFilter(key);
+                setDateFrom("");
+                setDateTo("");
+              }}
+              type="button"
+            >
+              {label}
+            </button>
+          ))}
+          <button
+            className={cn(
+              "h-8 rounded-lg border px-3 text-xs font-medium transition-colors",
+              quickDateFilter === "custom"
+                ? "border-demand/50 bg-demand/10 text-demand"
+                : "border-border/70 bg-transparent text-muted-foreground hover:border-demand/40 hover:text-foreground",
+            )}
+            onClick={() => setQuickDateFilter("custom")}
+            type="button"
+          >
+            Custom range
+          </button>
+          {quickDateFilter === "custom" && (
+            <>
+              <span className="text-xs text-muted">From</span>
+              <input
+                className="h-8 rounded-lg border border-border/70 bg-transparent px-2 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-demand/45"
+                onChange={(e) => setDateFrom(e.target.value)}
+                type="date"
+                value={dateFrom}
+              />
+              <span className="text-xs text-muted">To</span>
+              <input
+                className="h-8 rounded-lg border border-border/70 bg-transparent px-2 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-demand/45"
+                onChange={(e) => setDateTo(e.target.value)}
+                type="date"
+                value={dateTo}
+              />
+            </>
+          )}
         </div>
       </section>
 
