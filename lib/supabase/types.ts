@@ -1,0 +1,97 @@
+export type SupabaseProductRow = {
+  id: string;
+  nombre: string | null;
+  sku: string | null;
+  tipo: string | null;
+  categoria: string | null;
+  proveedor: string | null;
+  tier: string | null;
+  precio_costo: number | string | null;
+  precio_sugerido: number | string | null;
+  margen_pct: number | string | null;
+  ganancia: number | string | null;
+  stock: number | null;
+  imagen: string | null;
+  actualizado: string | null;
+  run_mode: string | null;
+  dropi_catalog_country: string | null;
+  manual_research_requested_at: string | null;
+  last_researched_at: string | null;
+  research_status: string | null;
+  research_error: string | null;
+  meta_global_last_checked_at: string | null;
+  meta_co_last_checked_at: string | null;
+  meta_mx_last_checked_at: string | null;
+  meta_top_ad_1_url: string | null;
+  meta_top_ad_1_page: string | null;
+  meta_top_ad_1_query_level: string | null;
+  meta_top_ad_2_url: string | null;
+  meta_top_ad_2_page: string | null;
+  meta_top_ad_2_query_level: string | null;
+  meta_top_ad_3_url: string | null;
+  meta_top_ad_3_page: string | null;
+  meta_top_ad_3_query_level: string | null;
+  co_top_ad_1_url: string | null;
+  co_top_ad_1_page: string | null;
+  co_top_ad_2_url: string | null;
+  co_top_ad_2_page: string | null;
+  co_top_ad_3_url: string | null;
+  co_top_ad_3_page: string | null;
+  mx_top_ad_1_url: string | null;
+  mx_top_ad_1_page: string | null;
+  mx_top_ad_2_url: string | null;
+  mx_top_ad_2_page: string | null;
+  mx_top_ad_3_url: string | null;
+  mx_top_ad_3_page: string | null;
+  ads_search_query: string | null;
+  query_qa_status: string | null;
+  query_qa_reason: string | null;
+  product_name_quality: string | null;
+  global_meta_ads_score: number | null;
+  global_meta_ads_score_type: string | null;
+  global_meta_product_match_confidence: string | null;
+  global_demand_detected: boolean | null;
+  co_visible_competition_score: number | null;
+  co_visible_competition_tier: string | null;
+  mx_visible_competition_score: number | null;
+  mx_visible_competition_tier: string | null;
+  opportunity_co: boolean | null;
+  opportunity_mx: boolean | null;
+  recommended_market: string | null;
+  market_opportunity_tier: string | null;
+  best_local_opportunity_score: number | null;
+  ads_score: number | null;
+  ads_demand_tier: string | null;
+  winner_candidate: boolean | null;
+  final_recommendation: string | null;
+  manual_decision: string | null;
+  decision_notes: string | null;
+  priority: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
+export type ProductCreativeRow = {
+  id: string;
+  product_id: string;
+  platform: "tiktok" | string;
+  creative_url: string;
+  thumbnail_url: string | null;
+  creator_name: string | null;
+  caption: string | null;
+  matched_query: string | null;
+  match_confidence:
+    | "EXACT_PRODUCT"
+    | "HIGHLY_SIMILAR_PRODUCT"
+    | "RELATED_BUT_WEAK"
+    | "REJECTED"
+    | string;
+  match_reason: string | null;
+  product_match_type: string | null;
+  country: string | null;
+  source: string | null;
+  found_at: string | null;
+  raw_payload: unknown | null;
+  created_at: string;
+  updated_at: string;
+};
