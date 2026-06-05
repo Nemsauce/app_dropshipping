@@ -313,5 +313,6 @@ export function mapSupabaseProductToOpportunity(
     mxTopAd2Page: row.mx_top_ad_2_page,
     mxTopAd3Url: row.mx_top_ad_3_url,
     mxTopAd3Page: row.mx_top_ad_3_page,
+    createdAt: row.created_at,
   };
 }
